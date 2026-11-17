@@ -66,11 +66,6 @@
     state.school = s;
     $('schoolSearch').value = s.name;
     $('schoolResults').hidden = true;
-    $('schoolChosen').hidden = false;
-    $('chosenName').textContent = s.name;
-    const loc = [s.data.province,s.data.city].filter(Boolean).join(' · ');
-    const rank = s.rank ? `市场排名 #${s.rank} · ` : '';
-    $('chosenMeta').textContent = `${rank}${loc} · 本科约 ${(s.data.B/10000).toFixed(1)}万 · ${s.data.source||'待核实'}`;
     $('boardTabs').hidden = false;
     try{ localStorage.setItem('xb_last_school', s.id); }catch(e){}
     refresh();
@@ -397,6 +392,19 @@
     renderMethods();
   }
 
+  // ---------- 吸顶偏移同步（顶栏 + 选校卡高度）----------
+  function layoutSync(){
+    const header = document.querySelector('.topbar');
+    const school = $('sec-school');
+    if(!header || !school) return;
+    const topH = header.offsetHeight;
+    const schoolH = school.offsetHeight;
+    const root = document.documentElement;
+    root.style.setProperty('--top-h', topH + 'px');
+    // 左栏顶部 = 顶栏 + 选校卡高度 + 一点间距
+    root.style.setProperty('--rail-top', Math.round(topH + schoolH + 14) + 'px');
+  }
+
   // ---------- 事件绑定 ----------
   function bind(){
     $('schoolSearch').addEventListener('input', e=>renderSearch(e.target.value));
@@ -415,4 +423,7 @@
     const last = localStorage.getItem('xb_last_school');
     if(last){ const s=SCHOOLS.find(x=>x.id===last); if(s) selectSchool(s); }
   }catch(e){}
+  layoutSync();
+  window.addEventListener('resize', layoutSync);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(layoutSync);
 })();
