@@ -49,7 +49,7 @@ const PARAMS = {
   },
   // 意愿兑现率 β
   beta: { c: 0.30, n: 0.50, o: 0.70 },
-  cDefault: 0.30,
+  cDefault: 0.60,
   // 服务者端参数
   e: { course: 0.15, kaoyan: 0.55, zhuanye: 0.60, cet: 0.15 },
   cs: 0.30,
