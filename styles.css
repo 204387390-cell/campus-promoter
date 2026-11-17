@@ -195,8 +195,17 @@ button,input{font-family:inherit}
   .topbar-inner{max-width:1360px}
   .container{max-width:1360px;padding:22px 28px 60px}
 
-  /* 选校通栏 */
-  #sec-school{margin-bottom:18px}
+  /* 选校通栏：吸顶在顶栏下方 */
+  #sec-school{
+    position:sticky;
+    top:var(--top-h, 68px);
+    z-index:40;
+    margin-bottom:0;
+    padding:14px 20px;
+    box-shadow:0 4px 16px rgba(31,39,51,.06);
+    border-color:var(--brand);
+  }
+  #sec-school .sec-head{margin-bottom:10px}
 
   /* 两栏网格：左固定宽，右自适应 */
   .desktop-layout{
@@ -205,11 +214,11 @@ button,input{font-family:inherit}
     gap:20px;
     align-items:start;
   }
-  /* 左栏粘住顶部（避开 sticky 顶栏），超高时内部滚动 */
+  /* 左栏粘住顶部（避开 sticky 顶栏+选校卡），超高时内部滚动 */
   .left-rail{
     position:sticky;
-    top:86px;
-    max-height:calc(100vh - 104px);
+    top:var(--rail-top, 170px);
+    max-height:calc(100vh - var(--rail-top, 170px) - 18px);
     overflow-y:auto;
     padding-right:4px;
   }
