@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>学伴+行 · 院校推广助手</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">伴</div>
+      <div>
+        <div class="brand-title">学伴+行 · 院校推广助手</div>
+        <div class="brand-sub">选院校 · 看市场 · 拿方案 · 一键复制</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- 1. 院校搜索 -->
+  <section class="card" id="sec-school">
+    <div class="sec-head"><span class="step-badge">1</span><h2>选择院校</h2></div>
+    <div class="search-wrap">
+      <input id="schoolSearch" class="search-input" type="text" placeholder="输入院校全称或简称搜索，如：吉林大学 / 吉大" autocomplete="off">
+      <button id="schoolClear" class="icon-btn" title="清除">×</button>
+    </div>
+    <div id="schoolResults" class="school-results" hidden></div>
+    <div id="schoolChosen" class="chosen-box" hidden>
+      <div class="chosen-name" id="chosenName"></div>
+      <div class="chosen-meta" id="chosenMeta"></div>
+    </div>
+    <div class="school-tabs" id="boardTabs" hidden>
+      <button class="board-tab active" data-board="陪跑">陪跑（课程/考研/转专业/四六级）</button>
+      <button class="board-tab" data-board="家教">家教（K12，仅内容推荐）</button>
+    </div>
+  </section>
+
+  <div class="desktop-layout" id="desktopLayout">
+  <aside class="left-rail" id="leftRail">
+  <!-- 陪跑专属：市场分析 -->
+  <div id="peipaoOnly">
+
+    <!-- 2. 年度市场概览 -->
+    <section class="card" id="sec-market">
+      <div class="sec-head"><span class="step-badge">2</span><h2>年度市场概览</h2><span class="tag tag-soft" id="confidenceTag">—</span></div>
+      <div class="market-hero">
+        <div class="hero-label">需求端年度订单预测（保守 ~ 乐观）</div>
+        <div class="hero-range" id="heroRange">—</div>
+        <div class="hero-mid">中性预测约 <strong id="heroMid">—</strong> 单</div>
+        <div class="hero-period" id="heroPeriod">测算期间 —</div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="categoryTable">
+          <thead><tr><th>业务</th><th>保守</th><th>中性</th><th>乐观</th><th>中性占比</th></tr></thead>
+          <tbody><tr><td colspan="5" class="empty-cell">选择院校后显示</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. 年度重点 / 当前重点 / 热点 -->
+    <section class="card" id="sec-focus">
+      <div class="sec-head"><span class="step-badge">3</span><h2>推广重点与热点阶段</h2></div>
+      <div class="focus-grid">
+        <div class="focus-box">
+          <div class="focus-title"><span class="dot dot-year"></span>年度重点</div>
+          <div id="yearFocus" class="focus-content">—</div>
+        </div>
+        <div class="focus-box">
+          <div class="focus-title"><span class="dot dot-now"></span>当前重点</div>
+          <div id="currentFocus" class="focus-content">—</div>
+        </div>
+      </div>
+      <div class="stage-panel">
+        <div class="stage-title">当前热点阶段 <span class="hint">（参考阶段，具体以学校通知为准）</span></div>
+        <div id="stageList" class="stage-list">—</div>
+      </div>
+    </section>
+  </div>
+  </aside>
+
+  <div class="right-main">
+  <!-- 4. 筛选 -->
+  <section class="card" id="sec-filter">
+    <div class="sec-head"><span class="step-badge" id="filterStep">4</span><h2>筛选推广方案</h2>
+      <button id="resetFilter" class="link-btn">恢复默认推荐</button>
+    </div>
+    <div id="filterHint" class="filter-hint">默认展示当前重点类目的推荐结果，可手动切换。</div>
+    <div class="filter-group">
+      <div class="filter-label">业务类目</div>
+      <div class="chips" id="filterCategory"></div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">推广目的</div>
+      <div class="chips" id="filterPurpose">
+        <button class="chip active" data-value="全部">全部</button>
+        <button class="chip" data-value="下单">吸引用户下单</button>
+        <button class="chip" data-value="招募">招募服务者</button>
+      </div>
+    </div>
+    <div class="filter-group" id="channelWrap">
+      <div class="filter-label">具体渠道</div>
+      <div class="chips" id="filterChannel"></div>
+    </div>
+  </section>
+
+  <!-- 5. 方案卡片 -->
+  <section id="sec-methods">
+    <div class="result-head">
+      <h2>推荐方案 <span id="resultCount" class="count-badge">0</span></h2>
+      <div class="result-note" id="resultNote"></div>
+    </div>
+    <div id="methodList" class="method-list"></div>
+  </section>
+
+  <!-- 6. 同步信息 -->
+  <section class="card footer-card" id="sec-source">
+    <div class="sync-row"><span class="sync-dot"></span>最近成功同步：<strong id="syncTime">—</strong></div>
+    <div class="source-row">
+      内容来源：<a id="sourceLink" href="#" target="_blank" rel="noopener">腾讯文档 · 推广方法及素材</a>
+      <span class="sep">·</span> 测算口径：<span id="modelName">—</span>
+    </div>
+    <details class="accordion">
+      <summary>待核对内容清单</summary>
+      <ul class="todo-list" id="todoList"></ul>
+    </details>
+  </section>
+  </div>
+  </div>
+
+</main>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="data.js"></script>
+<script src="calc.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
