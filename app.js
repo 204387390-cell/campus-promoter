@@ -26,6 +26,7 @@
   function initMeta(){
     $('syncTime').textContent = META.syncTime;
     $('modelName').textContent = META.modelName;
+    $('dataName').textContent = META.dataName || '院校市场数据';
     $('sourceLink').href = META.sourceUrl;
     const ul = $('todoList');
     TODO_LIST.forEach(x=>{ const li=document.createElement('li'); li.textContent=x; ul.appendChild(li); });
@@ -40,16 +41,24 @@
       s.name.toLowerCase().includes(kw) || s.short.some(x=>x.toLowerCase().includes(kw))
     );
     if(!hits.length){
-      box.innerHTML = '<div class="school-empty">未收录该院校，显示“待补充”。可先用示例院校体验，或联系运营补充数据。</div>';
+      box.innerHTML = '<div class="school-empty">未收录该院校，可联系运营补充数据。</div>';
       box.hidden=false; return;
     }
     box.innerHTML = '';
-    hits.forEach(s=>{
+    const shown = hits.slice(0,30);
+    shown.forEach(s=>{
       const div=document.createElement('div'); div.className='school-item';
-      div.innerHTML = `<span class="si-name">${s.name}</span><span class="si-meta">本科约 ${(s.data.B/10000).toFixed(1)}万 · ${s.data.year}年数据</span>`;
+      const mid = s.o && s.o.total ? ` · 中性 ${CALC.round(s.o.total.n)} 单` : '';
+      const loc = s.data.province ? `${s.data.province}` : '';
+      div.innerHTML = `<span class="si-name">${s.rank?`<small>#${s.rank} </small>`:''}${s.name}</span><span class="si-meta">${loc}${mid}</span>`;
       div.onclick = ()=>selectSchool(s);
       box.appendChild(div);
     });
+    if(hits.length>shown.length){
+      const more=document.createElement('div'); more.className='school-empty';
+      more.textContent=`还有 ${hits.length-shown.length} 所匹配，请输入更完整的校名`;
+      box.appendChild(more);
+    }
     box.hidden=false;
   }
 
@@ -59,7 +68,9 @@
     $('schoolResults').hidden = true;
     $('schoolChosen').hidden = false;
     $('chosenName').textContent = s.name;
-    $('chosenMeta').textContent = `数据来源：${s.data.source} · ${s.data.year}年 · 可信度：${s.data.confidence}`;
+    const loc = [s.data.province,s.data.city].filter(Boolean).join(' · ');
+    const rank = s.rank ? `市场排名 #${s.rank} · ` : '';
+    $('chosenMeta').textContent = `${rank}${loc} · 本科约 ${(s.data.B/10000).toFixed(1)}万 · ${s.data.source||'待核实'}`;
     $('boardTabs').hidden = false;
     try{ localStorage.setItem('xb_last_school', s.id); }catch(e){}
     refresh();
@@ -90,7 +101,8 @@
   // ---------- 市场渲染 ----------
   function renderMarket(){
     const s = state.school;
-    const dem = CALC.demand(s.data, PARAMS.cDefault);
+    // 优先用 xlsx 预计算订单（已按 c=0.6 口径翻倍），否则前端现算
+    const dem = getDemand(s);
     state.lastDemand = dem;
     const r = CALC.round;
     const period = CALC.periodText();
@@ -368,11 +380,20 @@
     resetFilter();
   }
 
+  // 从院校取需求预测（优先预计算值）
+  function getDemand(s){
+    if(s.o && s.o.total){
+      return { total:s.o.total, cat:{ course:s.o.course, kaoyan:s.o.kaoyan, zhuanye:s.o.zhuanye, cet:s.o.cet } };
+    }
+    return CALC.demand(s.data, PARAMS.cDefault);
+  }
+
   // ---------- 刷新 ----------
   function refresh(){
     if(!state.school) return;
+    state.lastDemand = getDemand(state.school);
     if(state.board==='陪跑') renderMarket();
-    else { state.lastDemand = window.XB_CALC.demand(state.school.data, PARAMS.cDefault); renderFocus(state.lastDemand); }
+    else renderFocus(state.lastDemand);
     renderMethods();
   }
 
