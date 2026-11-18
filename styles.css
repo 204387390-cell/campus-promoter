@@ -193,7 +193,8 @@ button,input{font-family:inherit}
 /* ============ 桌面端：左固定 + 右滚动 ============ */
 @media(min-width:1024px){
   .topbar-inner{max-width:1360px}
-  .container{max-width:1360px;padding:22px 28px 60px}
+  /* 顶部零留白：选校卡初始就贴住顶栏，吸顶无缝 */
+  .container{max-width:1360px;padding:0 28px 60px}
 
   /* 选校通栏：吸顶在顶栏下方 */
   #sec-school{
