@@ -100,16 +100,8 @@
     const dem = getDemand(s);
     state.lastDemand = dem;
     const r = CALC.round;
-    const period = CALC.periodText();
-
     $('heroRange').textContent = `${r(dem.total.c)} ~ ${r(dem.total.o)} 单`;
     $('heroMid').textContent = r(dem.total.n);
-    $('heroPeriod').textContent = `测算期间 ${period.label} · 宣传覆盖率假设 ${PARAMS.cDefault*100}%`;
-
-    // 可信度标签
-    const tag = $('confidenceTag');
-    tag.textContent = '条件情景 · 待校准';
-    tag.className = 'tag tag-soft low';
 
     // 分类表
     const tbody = $('categoryTable').querySelector('tbody');
