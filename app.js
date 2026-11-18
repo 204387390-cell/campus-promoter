@@ -184,7 +184,7 @@
 
   function renderChannelOptions(){
     // 校园渠道：朋友圈 / 群聊 / 公众号(含墙·频道·论坛投稿) / 海报传单
-    const channels = ['朋友圈','群聊','公众号','海报/传单'];
+    const channels = ['朋友圈','群聊','论坛','公众号','海报/传单'];
     const wrap = $('filterChannel');
     wrap.innerHTML = ['全部',...channels].map((c,i)=>`<button class="chip ${i===0?'active':''}" data-value="${c}">${c}</button>`).join('');
     wrap.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>{
@@ -208,7 +208,8 @@
     const c = state.channel;
     if(c==='朋友圈') return /朋友圈/.test(ch);
     if(c==='群聊') return /群/.test(ch);
-    if(c==='公众号') return /墙|频道|论坛|公众号/.test(ch);
+    if(c==='论坛') return /论坛/.test(ch);
+    if(c==='公众号') return /墙|频道|公众号/.test(ch);
     if(c==='海报/传单') return /海报|传单/.test(ch);
     return ch.includes(c);
   }
