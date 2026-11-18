@@ -123,13 +123,15 @@
 
   // ---------- 年度重点 / 当前重点 ----------
   function renderFocus(dem){
-    // 年度重点：中性预测 Top2
+    // 本校重点推广方向：中性预测 > 50 单的类目都算重点
     const ranked = CAT_ORDER.map(cat=>({ cat, k:CAT_KEY[cat], n:dem.cat[CAT_KEY[cat]].n }))
       .sort((a,b)=>b.n-a.n);
-    const top2 = ranked.slice(0,2);
-    $('yearFocus').innerHTML = top2.map((x,i)=>`
+    const focus = ranked.filter(x=>x.n > 50);
+    $('yearFocus').innerHTML = focus.length
+      ? focus.map((x,i)=>`
       <div class="focus-item"><b>${i+1}. ${CAT_LABEL[x.k]}</b>
-      <div class="reason">中性预测 ${CALC.round(x.n)} 单，占比 ${(x.n/dem.total.n*100).toFixed(1)}%</div></div>`).join('');
+      <div class="reason">中性预测 ${CALC.round(x.n)} 单，占比 ${(x.n/dem.total.n*100).toFixed(1)}%</div></div>`).join('')
+      : '<div class="reason" style="color:var(--text-3)">该校暂无中性预测超 50 单的业务方向。</div>';
 
     // 当前重点：热点阶段 ∩ 类目，同阶段按订单潜力排序
     const stages = currentStageKeys();
