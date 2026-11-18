@@ -14,6 +14,7 @@
 
   const $ = id => document.getElementById(id);
   const CAT_ORDER = ['课程','考研','转专业','四六级'];
+  const CAT_FULLNAME = { '课程':'课程辅导','考研':'考研辅导','转专业':'转专业辅导','四六级':'四六级辅导' };
   const CAT_KEY = { '课程':'course','考研':'kaoyan','转专业':'zhuanye','四六级':'cet' };
   const CAT_LABEL = { course:'课程辅导', kaoyan:'考研辅导', zhuanye:'转专业辅导', cet:'四六级辅导' };
 
@@ -160,7 +161,10 @@
   function initFilters(){
     const catWrap = $('filterCategory');
     const opts = ['自动', ...CAT_ORDER, '通用'];
-    catWrap.innerHTML = opts.map((o,i)=>`<button class="chip ${i===0?'active':''}" data-value="${o}">${o==='自动'?'自动（当前重点）':o}</button>`).join('');
+    catWrap.innerHTML = opts.map((o,i)=>{
+      const label = o==='自动' ? '自动（当前重点）' : (CAT_FULLNAME[o] || o);
+      return `<button class="chip ${i===0?'active':''}" data-value="${o}">${label}</button>`;
+    }).join('');
     catWrap.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>{
       catWrap.querySelectorAll('.chip').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active'); state.category=btn.dataset.value; renderMethods();
@@ -177,8 +181,8 @@
   }
 
   function renderChannelOptions(){
-    // 首版仅校园渠道
-    const channels = ['朋友圈','群聊','论坛','表白墙','海报/传单'];
+    // 校园渠道：朋友圈 / 群聊 / 公众号(含墙·频道·论坛投稿) / 海报传单
+    const channels = ['朋友圈','群聊','公众号','海报/传单'];
     const wrap = $('filterChannel');
     wrap.innerHTML = ['全部',...channels].map((c,i)=>`<button class="chip ${i===0?'active':''}" data-value="${c}">${c}</button>`).join('');
     wrap.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>{
@@ -202,8 +206,7 @@
     const c = state.channel;
     if(c==='朋友圈') return /朋友圈/.test(ch);
     if(c==='群聊') return /群/.test(ch);
-    if(c==='论坛') return /论坛/.test(ch);
-    if(c==='表白墙') return /墙|频道/.test(ch);
+    if(c==='公众号') return /墙|频道|论坛|公众号/.test(ch);
     if(c==='海报/传单') return /海报|传单/.test(ch);
     return ch.includes(c);
   }
@@ -362,8 +365,7 @@
   function switchBoard(board){
     state.board=board; state.category='自动'; state.purpose='全部'; state.channel='全部';
     document.querySelectorAll('.board-tab').forEach(b=>b.classList.toggle('active', b.dataset.board===board));
-    $('peipaoOnly').style.display = board==='陪跑' ? '' : 'none';
-    $('desktopLayout').classList.toggle('single', board==='家教');
+    // 左侧市场预测在陪跑/家教下都保留显示
     resetFilter();
   }
 
@@ -379,8 +381,7 @@
   function refresh(){
     if(!state.school) return;
     state.lastDemand = getDemand(state.school);
-    if(state.board==='陪跑') renderMarket();
-    else renderFocus(state.lastDemand);
+    renderMarket();
     renderMethods();
   }
 
