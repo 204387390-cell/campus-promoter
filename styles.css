@@ -208,12 +208,14 @@ button,input{font-family:inherit}
   }
   #sec-school .sec-head{margin-bottom:10px}
 
-  /* 两栏网格：左固定宽，右自适应 */
+  /* 两栏网格：左固定宽，右自适应
+     margin-top 让两栏与选校卡之间留空隙（14px），并与左栏吸顶偏移一致 */
   .desktop-layout{
     display:grid;
     grid-template-columns:400px minmax(0,1fr);
     gap:20px;
     align-items:start;
+    margin-top:14px;
   }
   /* 左栏粘住顶部（避开 sticky 顶栏+选校卡），超高时内部滚动 */
   .left-rail{
