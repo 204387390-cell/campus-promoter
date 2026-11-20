@@ -246,7 +246,7 @@
     $('filterHint').textContent = state.board==='家教'
       ? '家教板块仅做内容推荐（无市场测算模型）。'
       : '默认展示当前重点类目的推荐结果，可手动切换。';
-    $('resultNote').textContent = filtered.length ? '复制内容仅含发布正文；占位符发布前请替换。' : '';
+    $('resultNote').textContent = filtered.length ? '可分别复制文案、操作指南或两者；占位符发布前请替换。' : '';
 
     if(!filtered.length){
       list.innerHTML = `<div class="card" style="text-align:center;color:var(--text-3)">暂无适用文案／素材。可调整筛选条件查看通用方案。</div>`;
@@ -256,6 +256,20 @@
     bindCardEvents(filtered);
   }
 
+  // 生成"操作指南"纯文本（供复制用）
+  function guideText(m){
+    const f = m.frequency || {};
+    const lines = [
+      `阶段：${m.stage}`,
+      `常规频次：${f.normal||'—'}`,
+      `热点期频次：${f.hot||'—'}`,
+      `发布间隔：${f.interval||'—'}（${f.scope||'—'}）`
+    ];
+    if(f.rotation && f.rotation!=='—') lines.push(`文案轮换：${f.rotation}`);
+    if(m.steps && m.steps.length) lines.push('操作步骤：', ...m.steps.map((s,i)=>`${i+1}. ${s}`));
+    return lines.join('\n');
+  }
+
   function renderCard(m, idx){
     const boardClass = m.board==='陪跑'?'board-peipao':(m.board==='家教'?'board-jiajiao':'');
     const tags = `
@@ -263,44 +277,42 @@
       <span class="mc-tag">${m.category.join('/')}</span>
       <span class="mc-tag ${m.purpose==='招募'?'purpose-recruit':''}">${m.purpose==='招募'?'招募服务者':'吸引下单'}</span>
       <span class="mc-tag">${m.channel}</span>`;
-    const f = m.frequency;
-    const freq = `<div class="freq-box"><div class="freq-grid">
-      <span>常规频次</span><b>${f.normal}</b>
-      <span>热点期频次</span><b>${f.hot}</b>
-      <span>发布间隔</span><b>${f.interval}（${f.scope}）</b>
-      <span>文案轮换</span><b>${f.rotation}</b>
-    </div></div>`;
+    const f = m.frequency || {};
+
+    // 块1：标题（场景 + 对象）
+    const headHtml = `<div class="mc-head"><div class="mc-tags">${tags}</div><div class="mc-title">${m.name}</div>
+      <div class="mc-audience">适用对象：${m.audience}</div></div>`;
+
+    // 块2：操作指南（阶段 + 频次 + 步骤）
+    const stepsHtml = (m.steps&&m.steps.length) ? `<div class="info-row"><span class="info-key">操作步骤</span><span class="info-val">${m.steps.map((s,i)=>`${i+1}. ${s}`).join('<br>')}</span></div>` : '';
+    const guideHtml = `<div class="mc-body" style="padding-bottom:6px">
+      <div class="copy-label">操作指南</div>
+      <div class="freq-box"><div class="freq-grid">
+        <span>阶段</span><b>${m.stage}</b>
+        <span>常规频次</span><b>${f.normal||'—'}</b>
+        <span>热点期频次</span><b>${f.hot||'—'}</b>
+        <span>发布间隔</span><b>${f.interval||'—'}（${f.scope||'—'}）</b>
+      </div></div>
+      ${stepsHtml}
+    </div>`;
+
+    // 块3：具体文案（风格tab + 正文 + 复制按钮）
     let copyHtml = '';
     if(m.copies.length){
       const vTabs = m.copies.map((c,i)=>`<button class="version-tab ${i===0?'active':''}" data-card="${idx}" data-v="${i}">${c.version}</button>`).join('');
-      copyHtml = `<div class="copy-section">
-        <div class="copy-label">配套文案 · 可切换版本</div>
+      copyHtml = `<div class="mc-body" style="padding-top:6px"><div class="copy-section">
+        <div class="copy-label">具体文案 <span style="font-weight:400;color:var(--text-3)">· 切换风格版本</span></div>
         <div class="version-tabs">${vTabs}</div>
-        <div class="copy-text fade" id="copyText-${idx}">${escapeHtml(m.copies[0].text)}</div>
+        <div class="copy-text fade" id="copyText-${idx}" data-v="0">${escapeHtml(m.copies[0].text)}</div>
         <div class="copy-actions">
           <button class="btn btn-primary" data-copy="${idx}">复制文案</button>
+          <button class="btn btn-sm" data-copyop="${idx}">复制操作</button>
+          <button class="btn btn-sm" data-copyall="${idx}">复制操作+文案</button>
           <button class="btn btn-sm" data-expand="${idx}">展开全文</button>
         </div>
-      </div>`;
-    } else {
-      copyHtml = `<div class="warn-note">该方法是操作流程类，无固定文案，按步骤执行即可。</div>`;
+      </div></div>`;
     }
-    let matHtml = '';
-    if(m.materials.length){
-      matHtml = `<div style="margin-top:12px"><div class="copy-label">配套素材</div>` +
-        m.materials.map(x=>`<div class="material-row"><span class="mk">${x.type}</span><span>${x.name}${x.access && x.access.startsWith('http')?` · <a href="${x.access}" target="_blank" rel="noopener">打开原入口</a>`:''}</span></div>`).join('') + `</div>`;
-    }
-    const warn = m.notes ? `<div class="warn-note">📌 ${escapeHtml(m.notes)}</div>` : '';
-    return `<article class="method-card">
-      <div class="mc-head"><div class="mc-tags">${tags}</div><div class="mc-title">${m.name}</div>
-        <div class="mc-audience">适用对象：${m.audience} · 阶段：${m.stage}</div></div>
-      <div class="mc-body">
-        <div class="info-row"><span class="info-key">推荐原因</span><span class="info-val reason">与${m.category.join('/')}、${m.channel}及当前阶段匹配，适用于${m.audience}。</span></div>
-        <div class="info-row"><span class="info-key">操作步骤</span><span class="info-val">${m.steps.map((s,i)=>`${i+1}. ${s}`).join('<br>')}</span></div>
-        ${freq}${copyHtml}${matHtml}${warn}
-        <div class="material-row" style="margin-top:12px"><span class="mk">来源</span><span><a href="${m.source}" target="_blank" rel="noopener">腾讯文档原文</a> · 更新 ${m.updateTime}</span></div>
-      </div>
-    </article>`;
+    return `<article class="method-card">${headHtml}${guideHtml}${copyHtml}</article>`;
   }
 
   function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -318,25 +330,41 @@
       el.classList.remove('fade'); el.classList.add('expanded');
       el.dataset.v = vi;
     });
-    document.querySelectorAll('[data-copy]').forEach(btn=>btn.onclick=()=>{
-      const ci=+btn.dataset.copy;
-      const el=$('copyText-'+ci);
-      const vi = el.dataset.v ? +el.dataset.v : 0;
-      let text = filtered[ci].copies[vi].text;
-      // 通用模板自动填入院校名
-      if(state.school) text = text.replace(/【学校】/g, state.school.name);
-      // 必要信息校验：占位符
+    // 填入院校名
+    function fillSchool(text){
+      return state.school ? text.replace(/【学校】/g, state.school.name) : text;
+    }
+    function doCopy(text, el, okMsg){
+      text = fillSchool(text);
       const leftover = text.match(/【[^】]+】/g);
       copyText(text).then(ok=>{
         if(ok){
-          let msg='已复制发布正文';
-          if(leftover && leftover.length) msg+=`；注意仍有占位符 ${leftover.join(' ')} 需手动替换`;
+          let msg=okMsg;
+          if(leftover && leftover.length) msg+=`；仍有占位符 ${leftover.join(' ')} 需替换`;
           toast(msg);
         } else {
-          // 复制失败 → 选中文本手动复制
-          selectText(el); toast('自动复制失败，已为你选中文本，请手动复制');
+          if(el) selectText(el);
+          toast('自动复制失败，请手动复制');
         }
       });
+    }
+    // 当前选中的文案版本
+    function currentCopy(ci){
+      const el=$('copyText-'+ci);
+      const vi = el && el.dataset.v ? +el.dataset.v : 0;
+      return filtered[ci].copies[vi].text;
+    }
+    document.querySelectorAll('[data-copy]').forEach(btn=>btn.onclick=()=>{
+      const ci=+btn.dataset.copy;
+      doCopy(currentCopy(ci), $('copyText-'+ci), '已复制文案');
+    });
+    document.querySelectorAll('[data-copyop]').forEach(btn=>btn.onclick=()=>{
+      const ci=+btn.dataset.copyop;
+      doCopy(guideText(filtered[ci]), null, '已复制操作指南');
+    });
+    document.querySelectorAll('[data-copyall]').forEach(btn=>btn.onclick=()=>{
+      const ci=+btn.dataset.copyall;
+      doCopy(guideText(filtered[ci])+'\n\n'+currentCopy(ci), $('copyText-'+ci), '已复制操作+文案');
     });
     document.querySelectorAll('[data-expand]').forEach(btn=>btn.onclick=()=>{
       const ci=+btn.dataset.expand, el=$('copyText-'+ci);
