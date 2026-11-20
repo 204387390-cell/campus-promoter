@@ -256,15 +256,27 @@
     bindCardEvents(filtered);
   }
 
+  // 统一操作步骤规范（按业务目的生成）
+  // 下单类：复制文案 → 带小程序入口 → 发布到渠道
+  // 招募类：复制文案 → 附服务者群入口 → 带小程序入口 → 发布到渠道
+  function standardSteps(m){
+    const steps = ['复制下方文案（【学校】等占位符先替换）'];
+    if(m.purpose==='招募') steps.push('附上服务者群入口（二维码/群链接）');
+    steps.push('文案末尾带小程序入口（二维码 / 小程序转发卡片）');
+    steps.push(`发布到对应渠道：${m.channel}`);
+    return steps;
+  }
+
   // 生成"操作指南"纯文本（供复制用）
   function guideText(m){
     const f = m.frequency || {};
     const lines = [
       `阶段：${m.stage}`,
       `常规频次：${f.normal||'—'}`,
-      `热点期频次：${f.hot||'—'}`
+      `热点期频次：${f.hot||'—'}`,
+      '操作步骤：',
+      ...standardSteps(m).map((s,i)=>`${i+1}. ${s}`)
     ];
-    if(m.steps && m.steps.length) lines.push('操作步骤：', ...m.steps.map((s,i)=>`${i+1}. ${s}`));
     return lines.join('\n');
   }
 
@@ -281,8 +293,8 @@
     const headHtml = `<div class="mc-head"><div class="mc-tags">${tags}</div><div class="mc-title">${m.name}</div>
       <div class="mc-audience">适用对象：${m.audience}</div></div>`;
 
-    // 块2：操作指南（阶段 + 频次 + 步骤）
-    const stepsHtml = (m.steps&&m.steps.length) ? `<div class="info-row"><span class="info-key">操作步骤</span><span class="info-val">${m.steps.map((s,i)=>`${i+1}. ${s}`).join('<br>')}</span></div>` : '';
+    // 块2：操作指南（阶段 + 频次 + 统一步骤）
+    const stepsHtml = `<div class="info-row"><span class="info-key">操作步骤</span><span class="info-val">${standardSteps(m).map((s,i)=>`${i+1}. ${s}`).join('<br>')}</span></div>`;
     const guideHtml = `<div class="mc-body" style="padding-bottom:6px">
       <div class="copy-label">操作指南</div>
       <div class="freq-box"><div class="freq-grid">
