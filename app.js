@@ -262,10 +262,8 @@
     const lines = [
       `阶段：${m.stage}`,
       `常规频次：${f.normal||'—'}`,
-      `热点期频次：${f.hot||'—'}`,
-      `发布间隔：${f.interval||'—'}（${f.scope||'—'}）`
+      `热点期频次：${f.hot||'—'}`
     ];
-    if(f.rotation && f.rotation!=='—') lines.push(`文案轮换：${f.rotation}`);
     if(m.steps && m.steps.length) lines.push('操作步骤：', ...m.steps.map((s,i)=>`${i+1}. ${s}`));
     return lines.join('\n');
   }
@@ -291,7 +289,6 @@
         <span>阶段</span><b>${m.stage}</b>
         <span>常规频次</span><b>${f.normal||'—'}</b>
         <span>热点期频次</span><b>${f.hot||'—'}</b>
-        <span>发布间隔</span><b>${f.interval||'—'}（${f.scope||'—'}）</b>
       </div></div>
       ${stepsHtml}
     </div>`;
