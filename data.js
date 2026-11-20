@@ -397,8 +397,8 @@ const TODO_LIST = [
   '长者、实习板块不在首版范围，未纳入。'
 ];
 
-// 首版仅保留校园渠道的方法（公域、私聊暂不纳入）
-const CAMPUS_METHODS = METHODS.filter(m => m.channelGroup === '校园');
+// 首版仅保留校园渠道、有固定文案的方法（公域、私聊、操作流程类暂不纳入）
+const CAMPUS_METHODS = METHODS.filter(m => m.channelGroup === '校园' && m.copies && m.copies.length > 0);
 
 // 暴露到全局
 window.XB_DATA = { META, SCHOOLS, PARAMS, HOT_STAGES, METHODS: CAMPUS_METHODS, TODO_LIST };
